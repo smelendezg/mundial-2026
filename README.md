@@ -8,9 +8,8 @@ Proyecto académico – Ingeniería de Software 2026-1
 Tecnologías
 - Frontend Web: React
 - Mobile: React Native
-- Backend: (Spring Boot / FastAPI)
-- Base de datos: PostgreSQL
-- Notificaciones: Firebase
+- Backend:
+- Base de datos: MySQL
 - Pagos (sandbox): Stripe test
 
 Arquitectura
