@@ -72,4 +72,8 @@ public class ErrorHandlerException {
         body.put("mensaje", mensaje);
         return ResponseEntity.status(status).body(body);
     }
+    @ExceptionHandler(PartidoNotFoundException.class)
+public ResponseEntity<Map<String, Object>> handlePartidoNotFound(PartidoNotFoundException e) {
+    return buildResponse(HttpStatus.NOT_FOUND, e.getMessage());
+}
 }

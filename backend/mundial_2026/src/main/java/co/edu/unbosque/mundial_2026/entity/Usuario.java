@@ -45,7 +45,8 @@ public class Usuario {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean activo;
 
-    public Usuario() {}
+    public Usuario() {
+    }
 
     public Usuario(String correoUsuario, String contrasena) {
         this.correoUsuario = correoUsuario;
@@ -57,18 +58,59 @@ public class Usuario {
         this.activo = true;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getCorreoUsuario() { return correoUsuario; }
-    public void setCorreoUsuario(String correoUsuario) { this.correoUsuario = correoUsuario; }
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getApellido() { return apellido; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
-    public Rol getRol() { return rol; }
-    public void setRol(Rol rol) { this.rol = rol; }
-    public boolean isActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo = activo; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCorreoUsuario() {
+        return correoUsuario;
+    }
+
+    public void setCorreoUsuario(String correoUsuario) {
+        this.correoUsuario = correoUsuario;
+    }
+
+    public String getContrasena() {
+        return contrasena;
+    }
+
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 }
