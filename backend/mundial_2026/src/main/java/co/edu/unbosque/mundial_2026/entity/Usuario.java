@@ -1,5 +1,7 @@
 package co.edu.unbosque.mundial_2026.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,15 +11,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "usuarios")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Usuario {
+
+    private static final String USUARIO_ID = "usuario_id";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +48,21 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "rol_id", nullable = false)
     private Rol rol;
+
+    @ManyToMany
+    @JoinTable(name = "usuarios_selecciones", joinColumns = @JoinColumn(name = USUARIO_ID), inverseJoinColumns = @JoinColumn(name = "seleccion_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+            USUARIO_ID, "seleccion_id" }))
+    private List<Seleccion> seleccionesU;
+
+    @ManyToMany
+    @JoinTable(name = "usuarios_preferenciasUbi", joinColumns = @JoinColumn(name = USUARIO_ID), inverseJoinColumns = @JoinColumn(name = "estadio_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+            USUARIO_ID, "estadio_id" }))
+    private List<EstadioFavorito> preferenciasu;
+
+    @ManyToMany
+    @JoinTable(joinColumns = @JoinColumn(name = USUARIO_ID), inverseJoinColumns = @JoinColumn(name = "ciudad_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+            USUARIO_ID, "ciudad_id" }))
+    private List<CiudadFavorita> ciudadFavoritas;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private boolean activo;
@@ -112,5 +134,29 @@ public class Usuario {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public List<Seleccion> getSeleccionesU() {
+        return seleccionesU;
+    }
+
+    public void setSeleccionesU(List<Seleccion> seleccionesU) {
+        this.seleccionesU = seleccionesU;
+    }
+
+    public List<EstadioFavorito> getPreferenciasu() {
+        return preferenciasu;
+    }
+
+    public void setPreferenciasu(List<EstadioFavorito> preferenciasu) {
+        this.preferenciasu = preferenciasu;
+    }
+
+    public List<CiudadFavorita> getCiudadFavoritas() {
+        return ciudadFavoritas;
+    }
+
+    public void setCiudadFavoritas(List<CiudadFavorita> ciudadFavoritas) {
+        this.ciudadFavoritas = ciudadFavoritas;
     }
 }

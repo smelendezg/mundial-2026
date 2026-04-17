@@ -29,7 +29,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JwtValidationFilter extends BasicAuthenticationFilter {
 
@@ -40,7 +40,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         super(authManager);
         this.tokenBlacklist = tokenBlacklist;
     }
-
+//Revisa el token del usuario para acceder a funcionalidades del aplicativo
     @Override
     protected void doFilterInternal(final HttpServletRequest request,
             final HttpServletResponse response,
@@ -87,7 +87,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
             escribirRespuestaError(response, HttpStatus.UNAUTHORIZED.value(), body);
         }
     }
-
+//Metodo para asginarle el estado y el mensaje al usuario
     private void escribirRespuestaError(final HttpServletResponse response,
             final int status,
             final Map<String, String> body) throws IOException {

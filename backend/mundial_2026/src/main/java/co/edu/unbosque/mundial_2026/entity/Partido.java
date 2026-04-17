@@ -34,6 +34,8 @@ public class Partido {
     @Column(name = "seleccion_visitante")
     private String seleccionVisitante;
 
+
+
     private String estadio;
 
     public Partido() {
@@ -110,4 +112,5 @@ public class Partido {
     public void setEstadio(String estadio) {
         this.estadio = estadio;
     }
+
 }

@@ -44,7 +44,7 @@ public class SecurityConfig {
         this.usuarioRepository = usuarioRepository;
         this.tokenBlacklist = tokenBlacklist;
     }
-
+//Se crean los beans para poder usarlos segun corresponda en las demas clases
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {
         return authConfig.getAuthenticationManager();
@@ -59,12 +59,14 @@ public class SecurityConfig {
     public CommandLineRunner initJwtKey() {
         return args -> TokenJwt.init(jwtSecret);
     }
-
+//Relaciona las rutas a las que pueden acceder los usuarios segun su rol y las que necesita estar autenticado o no 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http,
             final AuthenticationManager authManager) throws Exception {
         return http.authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/listar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/estadios").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/ciudades").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                 .anyRequest().authenticated())

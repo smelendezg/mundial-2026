@@ -1,9 +1,12 @@
 package co.edu.unbosque.mundial_2026.dto.request;
 
+import jakarta.validation.constraints.Email;
+
 public class UsuarioActualizarRequestDTO {
 
     private String nombre;
     private String apellido;
+    @Email(message = "El correo nuevo no es válido")
     private String correoNuevo;
     private String contrasenaActual;
     private String contrasenaNueva;
