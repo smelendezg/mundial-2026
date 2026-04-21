@@ -1,6 +1,7 @@
 package co.edu.unbosque.mundial_2026;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -532,5 +533,110 @@ void agregarCiudad_usuarioNoExistente_lanzaExcepcion() {
     // WHEN + THEN
     assertThrows(UsuarioNotFoundException.class,
             () -> service.agregarCiudad("noexiste@test.com", List.of(1L)));
+}
+@Test
+void listarTodos_retornaLista() {
+    Rol rol = new Rol();
+    rol.setNombre("ROLE_USUARIO");
+    Usuario usuario = new Usuario();
+    usuario.setId(1L);
+    usuario.setCorreoUsuario("seb@test.com");
+    usuario.setNombre("Seb");
+    usuario.setApellido("Lopez");
+    usuario.setRol(rol);
+
+    when(repository.findAll()).thenReturn(List.of(usuario));
+    var resultado = service.listarTodos();
+    assertEquals(1, resultado.size());
+    assertEquals("seb@test.com", resultado.get(0).getCorreoUsuario());
+}
+
+@Test
+void listarTodos_listaVacia() {
+    when(repository.findAll()).thenReturn(java.util.Collections.emptyList());
+    assertTrue(service.listarTodos().isEmpty());
+}
+
+@Test
+void obtenerPorCorreo_encontrado_retornaDTO() {
+    Rol rol = new Rol();
+    rol.setNombre("ROLE_USUARIO");
+    Usuario usuario = new Usuario();
+    usuario.setCorreoUsuario("seb@test.com");
+    usuario.setNombre("Seb");
+    usuario.setApellido("Lopez");
+    usuario.setRol(rol);
+
+    when(repository.findByCorreoUsuario("seb@test.com")).thenReturn(Optional.of(usuario));
+    UsuarioResponseDTO resultado = service.obtenerPorCorreo("seb@test.com");
+    assertNotNull(resultado);
+    assertEquals("seb@test.com", resultado.getCorreoUsuario());
+}
+
+@Test
+void listarEstadios_retornaLista() {
+    co.edu.unbosque.mundial_2026.entity.EstadioFavorito e =
+        new co.edu.unbosque.mundial_2026.entity.EstadioFavorito();
+    e.setId(1L);
+    e.setNombre("Azteca");
+
+    when(estadioRepository.findAll()).thenReturn(List.of(e));
+    var resultado = service.listarEstadios();
+    assertEquals(1, resultado.size());
+    assertEquals("Azteca", resultado.get(0).getNombre());
+}
+
+@Test
+void listarCiudades_retornaLista() {
+    co.edu.unbosque.mundial_2026.entity.CiudadFavorita c =
+        new co.edu.unbosque.mundial_2026.entity.CiudadFavorita();
+    c.setId(1L);
+    c.setNombre("Dallas");
+
+    when(ciudadRepository.findAll()).thenReturn(List.of(c));
+    var resultado = service.listarCiudades();
+    assertEquals(1, resultado.size());
+    assertEquals("Dallas", resultado.get(0).getNombre());
+}
+
+@Test
+void registrar_rolNulo_asignaRolUsuarioPorDefecto() {
+    UsuarioRequestDTO dto = new UsuarioRequestDTO();
+    dto.setCorreoUsuario("seb@test.com");
+    dto.setContrasena("12345678");
+    dto.setNombre("Seb");
+    dto.setApellido("Lopez");
+    dto.setRol(null);
+
+    Rol rol = new Rol();
+    rol.setNombre("ROLE_USUARIO");
+    Usuario usuarioGuardado = new Usuario();
+    usuarioGuardado.setCorreoUsuario("seb@test.com");
+    usuarioGuardado.setNombre("Seb");
+    usuarioGuardado.setApellido("Lopez");
+    usuarioGuardado.setRol(rol);
+
+    when(repository.findByCorreoUsuario("seb@test.com")).thenReturn(Optional.empty());
+    when(rolRepository.findByNombre("ROLE_USUARIO")).thenReturn(Optional.of(rol));
+    when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+    when(repository.save(any(Usuario.class))).thenReturn(usuarioGuardado);
+
+    UsuarioResponseDTO resultado = service.registrarUsuario(dto);
+    assertNotNull(resultado);
+    verify(rolRepository).findByNombre("ROLE_USUARIO");
+}
+
+@Test
+void registrar_rolNoEncontrado_lanzaExcepcion() {
+    UsuarioRequestDTO dto = new UsuarioRequestDTO();
+    dto.setCorreoUsuario("seb@test.com");
+    dto.setContrasena("12345678");
+    dto.setRol("ROLE_INEXISTENTE");
+
+    when(repository.findByCorreoUsuario("seb@test.com")).thenReturn(Optional.empty());
+    when(rolRepository.findByNombre("ROLE_INEXISTENTE")).thenReturn(Optional.empty());
+
+    assertThrows(co.edu.unbosque.mundial_2026.exception.RolNotFoundException.class,
+            () -> service.registrarUsuario(dto));
 }
 }

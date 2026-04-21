@@ -1,36 +1,24 @@
 services:
-  db:
-    image: postgres:16
-    container_name: mundial_db
-    environment:
-      POSTGRES_DB: mundial_2026
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   app:
     build: .
     container_name: mundial_app
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mundial_2026
+      SPRING_DATASOURCE_URL: jdbc:postgresql://mundial-2026-db.postgres.database.azure.com:5432/mundial_2026
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres123
+      SPRING_DATASOURCE_PASSWORD: Mundial2026#Bosque
       JWT_SECRET: QJoKMMkOnk6M9+f37cAbW4AmU/9DwQUE6pKAQXCkzGA=
       API_FOOTBALL_URL: https://v3.football.api-sports.io
       API_FOOTBALL_KEY: 6ba0efffd79d5e7f49ec8b02c14cccb3
-    depends_on:
-      db:
-        condition: service_healthy
 
-volumes:
-  pgdata:
+  frontend:
+    build:
+      context: ../../frontend-web/frontend_mundial
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: mundial_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - app
