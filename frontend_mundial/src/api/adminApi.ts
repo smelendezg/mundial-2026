@@ -58,8 +58,8 @@ export async function adminCreateMatch(payload: {
 
     await createSystemEvent({
       type: "MATCH_STATUS_CHANGED",
-      actorId: "admin",
-      actorName: "Admin",
+      actorId: "operator",
+      actorName: "Operador",
       entityType: "MATCH",
       entityId: created.id,
       message: `Partido creado: ${created.home.name} vs ${created.away.name}`,
@@ -99,8 +99,8 @@ export async function adminCreateMatch(payload: {
 
   await createSystemEvent({
     type: "MATCH_STATUS_CHANGED",
-    actorId: "admin",
-    actorName: "Admin",
+    actorId: "operator",
+    actorName: "Operador",
     entityType: "MATCH",
     entityId: match.id,
     message: `Partido creado: ${match.home.name} vs ${match.away.name}`,
@@ -110,6 +110,64 @@ export async function adminCreateMatch(payload: {
       startTimeISO: match.startTimeISO,
       status: match.status,
       assignToAllPools: assign,
+    },
+  });
+
+  return match;
+}
+
+export async function adminUpdateMatch(
+  matchId: string,
+  payload: {
+    city: string;
+    stadium: string;
+    startTimeISO: string;
+    status: MatchStatus;
+  }
+): Promise<Match> {
+  if (!USE_MOCK) {
+    const updated = await http.patch<Match>(`/admin/matches/${matchId}`, payload);
+
+    await createSystemEvent({
+      type: "MATCH_STATUS_CHANGED",
+      actorId: "operator",
+      actorName: "Operador",
+      entityType: "MATCH",
+      entityId: updated.id,
+      message: `Partido ajustado: ${updated.home.name} vs ${updated.away.name}`,
+      data: {
+        city: updated.city,
+        stadium: updated.stadium,
+        startTimeISO: updated.startTimeISO,
+        status: updated.status,
+      },
+    });
+
+    return updated;
+  }
+
+  await sleep(150);
+
+  const match = mockDb.matches.find((item) => item.id === matchId);
+  if (!match) throw new Error("Match not found");
+
+  match.city = payload.city;
+  match.stadium = payload.stadium;
+  match.startTimeISO = payload.startTimeISO;
+  match.status = payload.status;
+
+  await createSystemEvent({
+    type: "MATCH_STATUS_CHANGED",
+    actorId: "operator",
+    actorName: "Operador",
+    entityType: "MATCH",
+    entityId: match.id,
+    message: `Partido ajustado: ${match.home.name} vs ${match.away.name}`,
+    data: {
+      city: match.city,
+      stadium: match.stadium,
+      startTimeISO: match.startTimeISO,
+      status: match.status,
     },
   });
 
@@ -127,8 +185,8 @@ export async function adminSetMatchStatus(
 
     await createSystemEvent({
       type: "MATCH_CREATED",
-      actorId: "admin",
-      actorName: "Admin",
+      actorId: "operator",
+      actorName: "Operador",
       entityType: "MATCH",
       entityId: match.id,
       message: `Estado actualizado: ${match.home.name} vs ${match.away.name} → ${status}`,
@@ -155,8 +213,8 @@ export async function adminSetMatchStatus(
 
   await createSystemEvent({
     type: "MATCH_CREATED",
-    actorId: "admin",
-    actorName: "Admin",
+    actorId: "operator",
+    actorName: "Operador",
     entityType: "MATCH",
     entityId: match.id,
     message: `Estado actualizado: ${match.home.name} vs ${match.away.name} → ${status}`,
@@ -179,8 +237,8 @@ export async function adminPublishResult(
 
     await createSystemEvent({
       type: "MATCH_RESULT_PUBLISHED",
-      actorId: "admin",
-      actorName: "Admin",
+      actorId: "operator",
+      actorName: "Operador",
       entityType: "MATCH",
       entityId: match.id,
       message: `Resultado publicado: ${match.home.name} ${match.score?.home ?? 0} - ${match.score?.away ?? 0} ${match.away.name}`,
@@ -209,8 +267,8 @@ export async function adminPublishResult(
 
   await createSystemEvent({
     type: "MATCH_RESULT_PUBLISHED",
-    actorId: "admin",
-    actorName: "Admin",
+    actorId: "operator",
+    actorName: "Operador",
     entityType: "MATCH",
     entityId: match.id,
     message: `Resultado publicado: ${match.home.name} ${h} - ${a} ${match.away.name}`,

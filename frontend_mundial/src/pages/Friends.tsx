@@ -12,6 +12,7 @@ import {
 
 import { createGroup, getMyGroup, joinGroup, leaveGroup } from "../api/groupApi";
 import { getPools } from "../api/poolsApi";
+import { bannerImages } from "../data/mockMedia";
 import { useApp } from "../context/AppContext";
 import type { FriendGroup } from "../types/friendGroup";
 import { validateCode, validateRequired, type FieldErrors } from "../utils/validation";
@@ -159,7 +160,26 @@ export default function Friends() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Grupos de amigos</Typography>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.friends})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            Grupos de amigos
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+            Crea grupos, comparte códigos de invitación y organiza con quién vivir el torneo.
+          </Typography>
+        </Stack>
+      </Paper>
 
       <Alert severity="info">
         Crea grupos, comparte códigos de invitación y controla la participación de los usuarios.

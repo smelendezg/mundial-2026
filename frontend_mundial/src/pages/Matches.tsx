@@ -14,7 +14,7 @@ import {
 import { getMatches } from "../api/matchesApi";
 import type { Match, MatchStatus } from "../types/match";
 import { formatTeam, getTeamFlag } from "../utils/countries";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
 
 type Msg = { text: string; severity: "success" | "error" | "info" } | null;
 

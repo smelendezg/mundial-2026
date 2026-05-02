@@ -4,6 +4,7 @@ import { mockDb } from "./mockDb";
 import { createSystemEvent } from "./eventsApi";
 
 import type { SupportCategory, SupportRequest, SupportStatus } from "../types/support";
+import { validateTextLength } from "../utils/validation";
 
 const sleep = (ms = 180) => new Promise((resolve) => setTimeout(resolve, ms));
 const nowIso = () => new Date().toISOString();
@@ -49,8 +50,10 @@ export async function createSupportRequest(
   const cleanTitle = title.trim();
   const cleanDescription = description.trim();
 
-  if (!cleanTitle) throw new Error("El asunto es obligatorio.");
-  if (!cleanDescription) throw new Error("La descripción es obligatoria.");
+  const titleError = validateTextLength(cleanTitle, "El asunto", 6, 90);
+  if (titleError) throw new Error(titleError);
+  const descriptionError = validateTextLength(cleanDescription, "La descripción", 20, 800);
+  if (descriptionError) throw new Error(descriptionError);
 
   const request: SupportRequest = {
     id: `sr_${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -93,6 +96,9 @@ export async function updateSupportStatus(
   const request = mockDb.supportRequests.find((item) => item.id === requestId);
 
   if (!request) throw new Error("La solicitud no existe.");
+  if (!["OPEN", "IN_REVIEW", "CLOSED"].includes(status)) {
+    throw new Error("El estado de soporte no es válido.");
+  }
 
   request.status = status;
   request.updatedAt = nowIso();

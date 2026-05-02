@@ -17,53 +17,94 @@ import {
   Chip,
   Divider,
   Tooltip,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 
 import { useApp } from "../context/AppContext";
 
 type NavItem = { label: string; to: string };
+type NavSection = { label: string; items: NavItem[] };
 
 export default function Layout() {
   const { user, logout } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [activeSection, setActiveSection] = useState("");
 
-  const isAdmin = user?.role === "admin";
+  const isOperator = user?.role === "operator";
   const isSupport = user?.role === "support";
-  const isUser = !!user && !isAdmin && !isSupport;
+  const isUser = !!user && !isOperator && !isSupport;
 
-  const navItems: NavItem[] = useMemo(() => {
-    if (isAdmin) {
+  const navSections: NavSection[] = useMemo(() => {
+    if (isOperator) {
       return [
-        { label: "Panel admin", to: "/admin" },
+        {
+          label: "Operación",
+          items: [
+            { label: "Panel operador", to: "/operator" },
+            { label: "Notificaciones", to: "/notifications" },
+          ],
+        },
       ];
     }
 
-    if (isSupport) return [{ label: "Soporte", to: "/support" }];
+    if (isSupport) {
+      return [
+        {
+          label: "Atención",
+          items: [{ label: "Soporte", to: "/support" }],
+        },
+      ];
+    }
 
     if (!isUser) return [];
 
     return [
-      { label: "Inicio", to: "/home" },
-      { label: "Partidos", to: "/matches" },
-      { label: "Perfil", to: "/profile" },
-      { label: "Pollas", to: "/pools" },
-      { label: "Grupos", to: "/friends" },
-      { label: "Álbum", to: "/album" },
-      { label: "Mercado", to: "/marketplace" },
-      { label: "Intercambios", to: "/trades" },
-      { label: "Entradas", to: "/tickets" },
-      { label: "Pagos", to: "/payments" },
-      { label: "Notificaciones", to: "/notifications" },
-      { label: "Soporte", to: "/support" },
-      { label: "Mapas", to: "/maps" },
+      {
+        label: "Inicio",
+        items: [
+          { label: "Inicio", to: "/home" },
+        ],
+      },
+      {
+        label: "Cuenta",
+        items: [
+          { label: "Perfil", to: "/profile" },
+          { label: "Notificaciones", to: "/notifications" },
+          { label: "Soporte", to: "/support" },
+        ],
+      },
+      {
+        label: "Comunidad",
+        items: [
+          { label: "Partidos", to: "/matches" },
+          { label: "Pollas", to: "/pools" },
+          { label: "Grupos", to: "/friends" },
+          { label: "Intercambios", to: "/trades" },
+          { label: "Mapas", to: "/maps" },
+          { label: "Álbum", to: "/album" },
+        ],
+      },
+      {
+        label: "Compras",
+        items: [
+          { label: "Tienda de láminas", to: "/marketplace" },
+          { label: "Tienda de souvenirs", to: "/store" },
+          { label: "Carrito", to: "/cart" },
+          { label: "Métodos de pago", to: "/payments" },
+          { label: "Entradas", to: "/tickets" },
+        ],
+      },
     ];
-  }, [isAdmin, isSupport, isUser]);
+  }, [isOperator, isSupport, isUser]);
 
   const handleLogout = async () => {
     await logout();
@@ -75,6 +116,8 @@ export default function Layout() {
     if (to !== "/" && location.pathname.startsWith(to + "/")) return true;
     return false;
   };
+
+  const isSectionActive = (items: NavItem[]) => items.some((item) => isActive(item.to));
 
   return (
     <>
@@ -124,27 +167,63 @@ export default function Layout() {
           </Box>
 
           {user && (
-            <Stack direction="row" spacing={1} sx={{ display: { xs: "none", md: "flex" } }}>
-              {isAdmin && <Chip icon={<ShieldRoundedIcon />} label="Gestión" size="small" />}
+          <Stack direction="row" spacing={1} sx={{ display: { xs: "none", md: "flex" } }}>
+              {isOperator && <Chip icon={<ShieldRoundedIcon />} label="Operación" size="small" />}
               <Chip label={user.name} size="small" />
             </Stack>
           )}
 
-          <Stack direction="row" spacing={0.75} sx={{ display: { xs: "none", md: "flex" } }}>
-            {navItems.map((item) => {
-              const active = isActive(item.to);
+          <Stack
+            direction="row"
+            spacing={0.9}
+            sx={{ display: { xs: "none", md: "flex" }, flex: 1, minWidth: 0, ml: 1 }}
+          >
+            {navSections.map((section) => {
+              const directItem = section.items.length === 1 ? section.items[0] : null;
+              const sectionActive = isSectionActive(section.items);
+
+              if (directItem) {
+                return (
+                  <Button
+                    key={section.label}
+                    component={RouterLink}
+                    to={directItem.to}
+                    color="inherit"
+                    size="small"
+                    sx={{
+                      px: 1.25,
+                      borderRadius: 2,
+                      whiteSpace: "nowrap",
+                      ...(sectionActive
+                        ? {
+                            backgroundColor: "rgba(108,124,155,0.20)",
+                            border: "1px solid rgba(108,124,155,0.35)",
+                          }
+                        : {
+                            border: "1px solid rgba(234,242,255,0.08)",
+                          }),
+                    }}
+                  >
+                    {section.label}
+                  </Button>
+                );
+              }
+
               return (
                 <Button
-                  key={item.to}
-                  component={RouterLink}
-                  to={item.to}
+                  key={section.label}
                   color="inherit"
                   size="small"
+                  endIcon={<ExpandMoreRoundedIcon />}
+                  onClick={(event) => {
+                    setMenuAnchor(event.currentTarget);
+                    setActiveSection(section.label);
+                  }}
                   sx={{
-                    px: 1,
+                    px: 1.25,
                     borderRadius: 2,
                     whiteSpace: "nowrap",
-                    ...(active
+                    ...(sectionActive
                       ? {
                           backgroundColor: "rgba(108,124,155,0.20)",
                           border: "1px solid rgba(108,124,155,0.35)",
@@ -154,7 +233,7 @@ export default function Layout() {
                         }),
                   }}
                 >
-                  {item.label}
+                  {section.label}
                 </Button>
               );
             })}
@@ -187,6 +266,34 @@ export default function Layout() {
         </Toolbar>
       </AppBar>
 
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => {
+          setMenuAnchor(null);
+          setActiveSection("");
+        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        {navSections
+          .find((section) => section.label === activeSection)
+          ?.items.map((item) => (
+            <MenuItem
+              key={item.to}
+              component={RouterLink}
+              to={item.to}
+              selected={isActive(item.to)}
+              onClick={() => {
+                setMenuAnchor(null);
+                setActiveSection("");
+              }}
+            >
+              {item.label}
+            </MenuItem>
+          ))}
+      </Menu>
+
       <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
         <Box sx={{ width: 280, p: 2 }}>
           <Stack spacing={1.2}>
@@ -197,17 +304,27 @@ export default function Layout() {
             <Divider />
 
             <List disablePadding>
-              {navItems.map((item) => (
-                <ListItemButton
-                  key={item.to}
-                  component={RouterLink}
-                  to={item.to}
-                  selected={isActive(item.to)}
-                  onClick={() => setOpen(false)}
-                  sx={{ borderRadius: 2, mb: 0.5 }}
-                >
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
+              {navSections.map((section) => (
+                <Box key={section.label} sx={{ mb: 1.25 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ px: 1.5, py: 0.5, display: "block", color: "text.secondary", fontWeight: 800 }}
+                  >
+                    {section.label}
+                  </Typography>
+                  {section.items.map((item) => (
+                    <ListItemButton
+                      key={item.to}
+                      component={RouterLink}
+                      to={item.to}
+                      selected={isActive(item.to)}
+                      onClick={() => setOpen(false)}
+                      sx={{ borderRadius: 2, mb: 0.5 }}
+                    >
+                      <ListItemText primary={item.label} />
+                    </ListItemButton>
+                  ))}
+                </Box>
               ))}
             </List>
 

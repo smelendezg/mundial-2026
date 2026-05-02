@@ -3,7 +3,7 @@ import { Alert, Box, Button, Chip, Paper, Stack, TextField, Typography } from "@
 
 import { getStadiums, stadiumsMock } from "../api/mapsApi";
 import type { Stadium } from "../types/stadium";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
 
 function buildMapUrl(stadium: Stadium) {
   const delta = 0.035;

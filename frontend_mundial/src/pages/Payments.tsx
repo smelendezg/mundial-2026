@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  Box,
   Button,
   Chip,
   MenuItem,
@@ -19,14 +20,28 @@ import {
 } from "../api/paymentsApi";
 import { useApp } from "../context/AppContext";
 import type { PaymentMethod, PaymentMethodType } from "../types/payment";
-import type { PaymentTx, PaymentTxStatus } from "../types/paymentTx";
+import type { PaymentTx, PaymentTxKind, PaymentTxStatus } from "../types/paymentTx";
 import {
+  formatCardNumber,
+  formatExpiryDate,
+  onlyDigits,
+  validateCardHolder,
+  validateCardNumber,
+  validateExpiryDate,
   validatePaymentReference,
+  validateSecurityCode,
   validateTextLength,
   type FieldErrors,
 } from "../utils/validation";
+import { bannerImages } from "../data/mockMedia";
 
-type PaymentField = "label" | "details";
+type PaymentField =
+  | "label"
+  | "details"
+  | "holderName"
+  | "cardNumber"
+  | "expiry"
+  | "cvv";
 type Msg = { text: string; severity: "success" | "error" | "info" } | null;
 
 const statusLabels: Record<PaymentTxStatus, string> = {
@@ -36,6 +51,13 @@ const statusLabels: Record<PaymentTxStatus, string> = {
   REFUNDED: "Reembolsado",
 };
 
+const kindLabels: Record<PaymentTxKind, string> = {
+  TICKET: "Entradas",
+  COINS: "Monedas",
+  PACKS: "Sobres",
+  MERCH: "Souvenirs",
+};
+
 export default function Payments() {
   const { user } = useApp();
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
@@ -43,6 +65,10 @@ export default function Payments() {
   const [type, setType] = useState<PaymentMethodType>("CARD");
   const [label, setLabel] = useState("");
   const [details, setDetails] = useState("");
+  const [holderName, setHolderName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState<FieldErrors<PaymentField>>({});
   const [msg, setMsg] = useState<Msg>(null);
   const [loading, setLoading] = useState(false);
@@ -64,14 +90,36 @@ export default function Payments() {
 
   if (!user) return <Alert severity="warning">Debes iniciar sesión.</Alert>;
 
-  const validateForm = () => {
-    const nextErrors: FieldErrors<PaymentField> = {
-      label: validateTextLength(label, "El nombre del método", 4, 40),
-      details: validatePaymentReference(details, "La referencia"),
-    };
+  const cardLast4 = onlyDigits(cardNumber).slice(-4);
+  const cardLabel = holderName.trim()
+    ? `${holderName.trim()} · terminada en ${cardLast4 || "****"}`
+    : `Tarjeta terminada en ${cardLast4 || "****"}`;
+  const cardDetails = `**** **** **** ${cardLast4 || "****"} · vence ${expiry || "MM/AA"}`;
 
-    if (type === "CARD" && !/\d{4}/.test(details)) {
-      nextErrors.details = "La referencia de tarjeta debe incluir al menos 4 números.";
+  const resetForm = () => {
+    setType("CARD");
+    setLabel("");
+    setDetails("");
+    setHolderName("");
+    setCardNumber("");
+    setExpiry("");
+    setCvv("");
+    setErrors({});
+  };
+
+  const validateForm = () => {
+    const nextErrors: FieldErrors<PaymentField> = {};
+
+    if (type === "CARD") {
+      nextErrors.holderName = validateCardHolder(holderName);
+      nextErrors.cardNumber = validateCardNumber(cardNumber);
+      nextErrors.expiry = validateExpiryDate(expiry);
+      nextErrors.cvv = validateSecurityCode(cvv);
+      nextErrors.label = validateTextLength(cardLabel, "La etiqueta de la tarjeta", 4, 40);
+      nextErrors.details = validatePaymentReference(cardDetails, "La referencia");
+    } else {
+      nextErrors.label = validateTextLength(label, "El nombre del método", 4, 40);
+      nextErrors.details = validatePaymentReference(details, "La referencia");
     }
 
     Object.keys(nextErrors).forEach((key) => {
@@ -90,10 +138,13 @@ export default function Payments() {
       setLoading(true);
       setMsg(null);
 
-      await addPaymentMethod(user.id, type, label, details);
-      setLabel("");
-      setDetails("");
-      setType("CARD");
+      await addPaymentMethod(
+        user.id,
+        type,
+        type === "CARD" ? cardLabel : label,
+        type === "CARD" ? cardDetails : details
+      );
+      resetForm();
       setMsg({ text: "Método de pago agregado.", severity: "success" });
       await refresh();
     } catch (e) {
@@ -132,54 +183,187 @@ export default function Payments() {
     }
   };
 
+  const summary = {
+    methods: methods.length,
+    pending: txs.filter((tx) => tx.status === "PENDING").length,
+    approved: txs.filter((tx) => tx.status === "SUCCEEDED").length,
+    shop: txs.filter((tx) => tx.kind === "MERCH" || tx.kind === "PACKS").length,
+  };
+
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Pagos</Typography>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          background: `linear-gradient(135deg, rgba(10,63,43,.94), rgba(19,120,82,.78)), url(${bannerImages.payments})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 950 }}>
+          Métodos de pago y movimientos
+        </Typography>
+        <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 720 }}>
+          Guarda tus medios de pago y revisa en un solo lugar entradas, sobres, monedas y compras
+          de souvenirs.
+        </Typography>
+      </Paper>
 
-      <Alert severity="info">
-        Administra métodos de pago sandbox, consulta transacciones y solicita reembolsos con
-        trazabilidad.
-      </Alert>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+        <Chip label={`${summary.methods} métodos guardados`} />
+        <Chip label={`${summary.pending} pagos pendientes`} />
+        <Chip label={`${summary.approved} pagos aprobados`} />
+        <Chip label={`${summary.shop} compras de tienda`} />
+      </Stack>
 
       {msg && <Alert severity={msg.severity}>{msg.text}</Alert>}
 
       <Paper sx={{ p: 2.5 }}>
         <Typography variant="h6">Agregar método</Typography>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} sx={{ mt: 2 }}>
+        <Stack spacing={2} sx={{ mt: 2 }}>
           <TextField
             select
             label="Tipo"
             value={type}
-            onChange={(event) => setType(event.target.value as PaymentMethodType)}
+            onChange={(event) => {
+              setType(event.target.value as PaymentMethodType);
+              setErrors({});
+            }}
             disabled={loading}
-            sx={{ minWidth: { md: 160 } }}
+            sx={{ maxWidth: { md: 220 } }}
           >
             <MenuItem value="CARD">Tarjeta</MenuItem>
             <MenuItem value="PSE">PSE</MenuItem>
             <MenuItem value="TRANSFER">Transferencia</MenuItem>
             <MenuItem value="CASH">Efectivo</MenuItem>
           </TextField>
-          <TextField
-            label="Nombre"
-            value={label}
-            onChange={(event) => setLabel(event.target.value)}
-            error={Boolean(errors.label)}
-            helperText={errors.label || "Ejemplo: Visa personal"}
-            disabled={loading}
-            fullWidth
-          />
-          <TextField
-            label="Referencia"
-            value={details}
-            onChange={(event) => setDetails(event.target.value)}
-            error={Boolean(errors.details)}
-            helperText={errors.details || "Ejemplo: 4111 **** 1111"}
-            disabled={loading}
-            fullWidth
-          />
-          <Button variant="contained" onClick={onAddMethod} disabled={loading}>
-            Agregar
-          </Button>
+
+          {type === "CARD" ? (
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <Stack spacing={2}>
+                <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+                  <TextField
+                    label="Nombre del titular"
+                    value={holderName}
+                    onChange={(event) => setHolderName(event.target.value)}
+                    error={Boolean(errors.holderName)}
+                    helperText={errors.holderName || "Como aparece en la tarjeta"}
+                    disabled={loading}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Código de seguridad"
+                    value={cvv}
+                    onChange={(event) => setCvv(onlyDigits(event.target.value).slice(0, 4))}
+                    error={Boolean(errors.cvv)}
+                    helperText={errors.cvv || "CVV de 3 o 4 dígitos"}
+                    disabled={loading}
+                    sx={{ minWidth: { md: 220 } }}
+                  />
+                </Stack>
+
+                <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+                  <TextField
+                    label="Número de tarjeta"
+                    value={cardNumber}
+                    onChange={(event) => setCardNumber(formatCardNumber(event.target.value))}
+                    error={Boolean(errors.cardNumber)}
+                    helperText={errors.cardNumber || "Se validan 16 dígitos y consistencia del número"}
+                    disabled={loading}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Vencimiento"
+                    value={expiry}
+                    onChange={(event) => setExpiry(formatExpiryDate(event.target.value))}
+                    error={Boolean(errors.expiry)}
+                    helperText={errors.expiry || "Formato MM/AA"}
+                    disabled={loading}
+                    sx={{ minWidth: { md: 220 } }}
+                  />
+                </Stack>
+
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    background:
+                      "linear-gradient(135deg, rgba(8,58,42,.98), rgba(20,111,75,.88))",
+                  }}
+                >
+                  <Stack spacing={1}>
+                    <Typography variant="overline" sx={{ color: "rgba(230,240,232,.8)" }}>
+                      Tarjeta segura
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: 2 }}>
+                      {cardNumber || "**** **** **** ****"}
+                    </Typography>
+                    <Stack direction="row" justifyContent="space-between" spacing={2}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "rgba(230,240,232,.78)" }}>
+                          Titular
+                        </Typography>
+                        <Typography sx={{ fontWeight: 700 }}>
+                          {holderName || "Nombre del titular"}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "rgba(230,240,232,.78)" }}>
+                          Vence
+                        </Typography>
+                        <Typography sx={{ fontWeight: 700 }}>{expiry || "MM/AA"}</Typography>
+                      </Box>
+                    </Stack>
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Paper>
+          ) : (
+            <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
+              <TextField
+                label="Nombre"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+                error={Boolean(errors.label)}
+                helperText={
+                  errors.label ||
+                  (type === "PSE"
+                    ? "Ejemplo: PSE Bancolombia"
+                    : type === "TRANSFER"
+                    ? "Ejemplo: Cuenta principal"
+                    : "Ejemplo: Pago en punto autorizado")
+                }
+                disabled={loading}
+                fullWidth
+              />
+              <TextField
+                label="Referencia"
+                value={details}
+                onChange={(event) => setDetails(event.target.value)}
+                error={Boolean(errors.details)}
+                helperText={
+                  errors.details ||
+                  (type === "PSE"
+                    ? "Ejemplo: Ahorros Bancolombia"
+                    : type === "TRANSFER"
+                    ? "Ejemplo: Cuenta terminada en 4581"
+                    : "Ejemplo: Recaudo Medellín")
+                }
+                disabled={loading}
+                fullWidth
+              />
+            </Stack>
+          )}
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
+            <Button variant="contained" onClick={onAddMethod} disabled={loading}>
+              Agregar método
+            </Button>
+            <Button variant="outlined" color="inherit" onClick={resetForm} disabled={loading}>
+              Limpiar
+            </Button>
+          </Stack>
         </Stack>
       </Paper>
 
@@ -226,11 +410,31 @@ export default function Payments() {
                 <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={2}>
                   <Stack spacing={0.5}>
                     <Typography sx={{ fontWeight: 800 }}>
-                      {tx.kind === "TICKET" ? "Entrada" : "Monedas"} · {statusLabels[tx.status]}
+                      {kindLabels[tx.kind]} · {statusLabels[tx.status]}
                     </Typography>
                     <Typography color="text.secondary">
                       ${tx.amount.toLocaleString()} {tx.currency} · {tx.provider}
                     </Typography>
+                    {tx.kind === "PACKS" && (
+                      <Typography color="text.secondary">
+                        {tx.itemName ?? "Compra de sobres"} · {tx.packs ?? tx.quantity ?? 1} sobres
+                      </Typography>
+                    )}
+                    {tx.kind === "COINS" && (
+                      <Typography color="text.secondary">
+                        Recarga de {tx.coins ?? 0} monedas
+                      </Typography>
+                    )}
+                    {tx.kind === "TICKET" && (
+                      <Typography color="text.secondary">
+                        Reserva vinculada: {tx.ticketId ?? "Pendiente de asignación"}
+                      </Typography>
+                    )}
+                    {tx.kind === "MERCH" && (
+                      <Typography color="text.secondary">
+                        {tx.itemName} · {tx.itemSize} · Cantidad {tx.quantity ?? 1}
+                      </Typography>
+                    )}
                     <Typography variant="caption" color="text.secondary">
                       Creada: {new Date(tx.createdAt).toLocaleString()}
                       {tx.confirmedAt ? ` · Confirmada: ${new Date(tx.confirmedAt).toLocaleString()}` : ""}

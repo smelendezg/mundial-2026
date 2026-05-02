@@ -13,10 +13,12 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+import { bannerImages } from "../data/mockMedia";
 import { useApp } from "../context/AppContext";
 import { getMyProfile, updateMyProfile } from "../api/profileApi";
 import type { Profile } from "../types/profile";
 import {
+  validateDelimitedPreferences,
   splitCommaValues,
   validateAvatar,
   validateEmail,
@@ -72,14 +74,12 @@ export default function ProfilePage() {
   if (!profile) return <Alert severity="info">Cargando perfil...</Alert>;
 
   const validateForm = () => {
-    const favoriteTeams = splitCommaValues(teams);
-    const favoriteCities = splitCommaValues(cities);
     const nextErrors: FieldErrors<ProfileField> = {
       name: validatePersonName(name, "El nombre"),
       lastName: validatePersonName(lastName, "El apellido"),
       email: validateEmail(email),
-      teams: favoriteTeams.length > 5 ? "Selecciona máximo 5 equipos favoritos." : "",
-      cities: favoriteCities.length > 5 ? "Selecciona máximo 5 ciudades favoritas." : "",
+      teams: validateDelimitedPreferences(teams, "Equipos favoritos", 5),
+      cities: validateDelimitedPreferences(cities, "Ciudades o estadios de interés", 5),
     };
 
     Object.keys(nextErrors).forEach((key) => {
@@ -152,12 +152,26 @@ export default function ProfilePage() {
 
   return (
     <Stack spacing={2} sx={{ maxWidth: 820, mx: "auto" }}>
-      <Box>
-        <Typography variant="h5">Editar perfil</Typography>
-        <Typography color="text.secondary">
-          Mantén tus datos y preferencias actualizadas para personalizar la agenda del torneo.
-        </Typography>
-      </Box>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.profile})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            Editar perfil
+          </Typography>
+          <Typography color="text.secondary">
+            Mantén tus datos y preferencias al día para personalizar mejor tu experiencia.
+          </Typography>
+        </Stack>
+      </Paper>
 
       {message && (
         <Alert severity={message.includes("correctamente") ? "success" : "error"}>{message}</Alert>

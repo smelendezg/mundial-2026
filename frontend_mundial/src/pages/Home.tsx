@@ -8,7 +8,7 @@ import { useApp } from "../context/AppContext";
 import type { Match } from "../types/match";
 import type { Profile } from "../types/profile";
 import { formatTeam } from "../utils/countries";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
 
 function hasMatchPreference(match: Match, profile: Profile) {
   const teams = profile.favoriteTeams.map((team) => team.toLowerCase());

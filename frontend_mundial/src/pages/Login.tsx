@@ -11,7 +11,8 @@ import {
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 import { useApp } from "../context/AppContext";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
+import { validateUsernameOrEmail } from "../utils/validation";
 
 export default function Login() {
   const { user, login, authLoading } = useApp();
@@ -29,21 +30,22 @@ export default function Login() {
 
   useEffect(() => {
     if (authLoading || !user) return;
-    if (user.role === "admin") navigate("/admin", { replace: true });
+    if (user.role === "operator") navigate("/operator", { replace: true });
     else if (user.role === "support") navigate("/support", { replace: true });
     else navigate("/home", { replace: true });
   }, [authLoading, navigate, user]);
 
   const onSubmit = async () => {
     const cleanUsername = username.trim();
-
-    if (cleanUsername.length < 2) {
-      setError("Escribe tu usuario o correo.");
-      return;
-    }
+    const usernameError = validateUsernameOrEmail(cleanUsername);
+    if (usernameError) return setError(usernameError);
 
     if (!password) {
       setError("Escribe tu contraseña.");
+      return;
+    }
+    if (password.length > 80) {
+      setError("La contraseña no puede tener más de 80 caracteres.");
       return;
     }
 

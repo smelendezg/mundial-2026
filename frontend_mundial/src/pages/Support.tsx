@@ -19,8 +19,8 @@ import {
 } from "../api/supportApi";
 import { useApp } from "../context/AppContext";
 import type { SupportCategory, SupportRequest, SupportStatus } from "../types/support";
-import { validateRequired, type FieldErrors } from "../utils/validation";
-import { bannerImages } from "../theme/bannerImages";
+import { validateTextLength, type FieldErrors } from "../utils/validation";
+import { bannerImages } from "../data/mockMedia";
 
 type SupportField = "title" | "description";
 type Msg = { text: string; severity: "success" | "error" | "info" } | null;
@@ -100,8 +100,8 @@ export default function Support() {
 
   const validateForm = () => {
     const nextErrors: FieldErrors<SupportField> = {
-      title: validateRequired(title, "El asunto", 6),
-      description: validateRequired(description, "La descripción", 20),
+      title: validateTextLength(title, "El asunto", 6, 90),
+      description: validateTextLength(description, "La descripción", 20, 800),
     };
 
     Object.keys(nextErrors).forEach((key) => {
@@ -318,7 +318,7 @@ export default function Support() {
                     onChange={(event) =>
                       onStatusChange(item.id, event.target.value as SupportStatus)
                     }
-                    disabled={loading || (!isStaff && item.status === "CLOSED")}
+                    disabled={loading || !isStaff}
                     sx={{ minWidth: 180 }}
                   >
                     {Object.entries(statusLabels).map(([value, label]) => (

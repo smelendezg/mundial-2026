@@ -22,7 +22,7 @@ import { useApp } from "../context/AppContext";
 import type { AlbumEvent } from "../types/albumEvent";
 import type { Sticker } from "../types/sticker";
 import { getCountryFlag } from "../utils/countries";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
 
 const POOL_CODE = "AMIGOS2026";
 

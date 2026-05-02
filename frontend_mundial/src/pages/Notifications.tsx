@@ -7,6 +7,7 @@ import {
   getNotifications,
   markNotificationRead,
 } from "../api/notificationApi";
+import { bannerImages } from "../data/mockMedia";
 import { useApp } from "../context/AppContext";
 import type { NotificationItem } from "../types/notification";
 import { validateRequired, type FieldErrors } from "../utils/validation";
@@ -16,7 +17,7 @@ type Msg = { text: string; severity: "success" | "error" } | null;
 
 export default function Notifications() {
   const { user } = useApp();
-  const isAdmin = user?.role === "admin";
+  const isOperator = user?.role === "operator";
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -93,7 +94,26 @@ export default function Notifications() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Notificaciones</Typography>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.notifications})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            Notificaciones
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+            Revisa alertas, avisos del torneo y comunicaciones que se han enviado a los usuarios.
+          </Typography>
+        </Stack>
+      </Paper>
 
       <Alert severity="info">
         Consulta alertas y registra evidencia de comunicaciones enviadas a los usuarios.
@@ -101,7 +121,7 @@ export default function Notifications() {
 
       {msg && <Alert severity={msg.severity}>{msg.text}</Alert>}
 
-      {isAdmin && (
+      {isOperator && (
         <Paper sx={{ p: 2.5 }}>
           <Typography variant="h6">Crear comunicación</Typography>
           <Stack spacing={2} sx={{ mt: 2 }}>
@@ -159,7 +179,7 @@ export default function Notifications() {
                         Marcar leída
                       </Button>
                     )}
-                    {isAdmin && (
+                    {isOperator && (
                       <Button color="error" variant="outlined" onClick={() => onDelete(item.id)}>
                         Borrar
                       </Button>

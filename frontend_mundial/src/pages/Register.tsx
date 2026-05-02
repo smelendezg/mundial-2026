@@ -21,9 +21,10 @@ import {
   validateEmail,
   validatePassword,
   validatePersonName,
+  validateRequired,
   type FieldErrors,
 } from "../utils/validation";
-import { bannerImages } from "../theme/bannerImages";
+import { bannerImages } from "../data/mockMedia";
 
 type RegisterField = "name" | "lastName" | "email" | "password" | "avatar";
 
@@ -84,6 +85,7 @@ export default function Register() {
 
   const onSubmit = async () => {
     if (!validateForm()) return;
+    if (validateRequired(avatarUrl, "El avatar") && avatarUrl.trim()) return;
 
     try {
       setSaving(true);

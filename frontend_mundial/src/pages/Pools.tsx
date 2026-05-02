@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useState } from "react"; 
+import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material"; 
+import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 
-import { Link as RouterLink } from "react-router-dom"; 
+import { Link as RouterLink } from "react-router-dom";
 
- 
 
-import { useApp } from "../context/AppContext"; 
+
+import { bannerImages } from "../data/mockMedia";
+import { useApp } from "../context/AppContext";
 
 import type { Pool, User as PoolUser } from "../types/pool"; 
 
-import { createPool, getPools, joinPool } from "../api/poolsApi"; 
+import { createPool, getPools, joinPool } from "../api/poolsApi";
 import { validateCode, validateRequired } from "../utils/validation";
 
  
@@ -33,44 +34,63 @@ export default function Pools() {
 
   const [msg, setMsg] = useState<Msg>(null); 
 
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [newPoolError, setNewPoolError] = useState("");
   const [joinCodeError, setJoinCodeError] = useState("");
 
  
 
-  const refresh = useCallback(async () => { 
+  const refresh = useCallback(async () => {
 
     if (!user) return;
-    const data = await getPools(); 
+    const data = await getPools();
 
  
 
-    const myPools = data.filter((p) => p.members.some((m) => m.user.id === user?.id)); 
+    const myPools = data.filter((p) => p.members.some((m) => m.user.id === user?.id));
 
-    setPools(myPools); 
+    setPools(myPools);
 
-  }, [user]); 
+  }, [user]);
 
  
 
   useEffect(() => { 
 
-    if (!user) return; 
+    if (!user) return;
 
-    refresh().catch(() => setMsg({ text: "No se pudieron cargar las pollas.", severity: "error" })); 
+    refresh().catch(() => setMsg({ text: "No se pudieron cargar las pollas.", severity: "error" }));
 
-  }, [refresh, user]); 
+  }, [refresh, user]);
 
  
 
   if (!user) { 
 
-    return ( 
+    return (
 
-      <Stack spacing={2}> 
+      <Stack spacing={2}>
 
-        <Typography variant="h5">Pollas</Typography> 
+        <Paper
+          sx={{
+            p: { xs: 2.5, md: 3 },
+            minHeight: 240,
+            background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.pools})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+        >
+          <Stack spacing={1}>
+            <Typography variant="h4" sx={{ fontWeight: 950 }}>
+              Pollas
+            </Typography>
+            <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+              Crea una polla, únete con código y sigue tus competencias con una vista más clara.
+            </Typography>
+          </Stack>
+        </Paper>
 
         <Alert severity="warning">Debes iniciar sesión para ver/crear/unirte a una polla.</Alert> 
 
@@ -108,11 +128,11 @@ export default function Pools() {
 
     const error = validateRequired(name, "El nombre de la polla", 4);
     setNewPoolError(error);
-    if (error) { 
+    if (error) {
 
-      setMsg({ text: error, severity: "error" }); 
+      setMsg({ text: error, severity: "error" });
 
-      return; 
+      return;
 
     } 
 
@@ -132,7 +152,7 @@ export default function Pools() {
 
       setNewPoolName(""); 
 
-      setMsg({ text: "Polla creada correctamente.", severity: "success" }); 
+      setMsg({ text: "Polla creada correctamente.", severity: "success" });
 
       await refresh(); 
 
@@ -140,7 +160,7 @@ export default function Pools() {
 
       const err = e instanceof Error ? e.message : "No se pudo crear la polla"; 
 
-      setMsg({ text: err, severity: "error" }); 
+      setMsg({ text: err, severity: "error" });
 
     } finally { 
 
@@ -158,11 +178,11 @@ export default function Pools() {
 
     const error = validateCode(code, "El código de la polla");
     setJoinCodeError(error);
-    if (error) { 
+    if (error) {
 
-      setMsg({ text: error, severity: "error" }); 
+      setMsg({ text: error, severity: "error" });
 
-      return; 
+      return;
 
     } 
 
@@ -184,9 +204,9 @@ export default function Pools() {
 
         result 
 
-          ? { text: "Te uniste a la polla.", severity: "success" } 
+          ? { text: "Te uniste a la polla.", severity: "success" }
 
-          : { text: "Código inválido.", severity: "error" } 
+          : { text: "Código inválido.", severity: "error" }
 
       ); 
 
@@ -200,7 +220,7 @@ export default function Pools() {
 
       const err = e instanceof Error ? e.message : "Error uniéndote a la polla"; 
 
-      setMsg({ text: err, severity: "error" }); 
+      setMsg({ text: err, severity: "error" });
 
     } finally { 
 
@@ -212,21 +232,36 @@ export default function Pools() {
 
  
 
-  return ( 
+  return (
 
-    <div> 
-
-      <Typography variant="h5" gutterBottom> 
-
-        Pollas 
-
-      </Typography> 
+    <div>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          mb: 2,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.pools})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            Pollas
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+            Crea una polla, únete con código y compite por puntos durante todo el torneo.
+          </Typography>
+        </Stack>
+      </Paper>
 
  
 
       <Alert severity="info" sx={{ mb: 2 }}> 
 
-        Crea pollas, comparte códigos de invitación, registra pronósticos y consulta el ranking. 
+        Crea pollas, comparte códigos de invitación, registra pronósticos y consulta el ranking.
 
       </Alert> 
 
@@ -258,7 +293,7 @@ export default function Pools() {
 
               value={newPoolName} 
 
-              onChange={(e) => setNewPoolName(e.target.value)} 
+              onChange={(e) => setNewPoolName(e.target.value)}
               error={Boolean(newPoolError)}
               helperText={newPoolError || "Mínimo 4 caracteres."}
 
@@ -290,7 +325,7 @@ export default function Pools() {
 
               value={joinCode} 
 
-              onChange={(e) => setJoinCode(e.target.value)} 
+              onChange={(e) => setJoinCode(e.target.value)}
               error={Boolean(joinCodeError)}
               helperText={joinCodeError || "Escribe el código de invitación."}
 
@@ -394,4 +429,4 @@ export default function Pools() {
 
   ); 
 
-} 
+}

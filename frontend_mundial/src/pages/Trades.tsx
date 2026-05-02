@@ -3,6 +3,7 @@ import { Alert, Button, MenuItem, Paper, Stack, TextField, Typography } from "@m
 
 import { acceptTrade, createTradeOffer, getTrades } from "../api/tradesApi";
 import { getPools } from "../api/poolsApi";
+import { bannerImages } from "../data/mockMedia";
 import { useApp } from "../context/AppContext";
 import type { Sticker } from "../types/sticker";
 import type { TradeOffer } from "../types/trade";
@@ -120,7 +121,26 @@ export default function Trades() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Intercambios</Typography>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.trades})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>
+            Intercambios
+          </Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 720 }}>
+            Crea ofertas, revisa propuestas pendientes y completa cambios de láminas con más orden.
+          </Typography>
+        </Stack>
+      </Paper>
 
       <Alert severity="info">
         Intercambia láminas repetidas con confirmación mutua y límites para evitar abusos.

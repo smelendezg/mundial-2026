@@ -5,6 +5,7 @@ import { mockDb } from "./mockDb";
 import { createSystemEvent } from "./eventsApi";
 
 import type { Ticket } from "../types/ticket";
+import { validateIntegerRange, validateRequired } from "../utils/validation";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -68,6 +69,11 @@ export async function reserveTicket(
   matchId: string,
   quantity: number
 ): Promise<Ticket> {
+  const matchIdError = validateRequired(matchId, "El partido");
+  if (matchIdError) throw new Error(matchIdError);
+  const quantityError = validateIntegerRange(quantity, "La cantidad", 1, 6);
+  if (quantityError) throw new Error(quantityError);
+
   if (!USE_MOCK) {
     return http.post<Ticket>(`/tickets/reserve`, { matchId, quantity });
   }

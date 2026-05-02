@@ -12,7 +12,9 @@ export type PaymentProvider =
 
 export type PaymentTxKind =
   | "TICKET"
-  | "COINS";
+  | "COINS"
+  | "MERCH"
+  | "PACKS";
 
 export type PaymentTx = {
   id: string;
@@ -22,6 +24,11 @@ export type PaymentTx = {
 
   ticketId?: string;
   coins?: number;
+  itemSku?: string;
+  itemName?: string;
+  itemSize?: string;
+  quantity?: number;
+  packs?: number;
 
   paymentMethodId: string;
 

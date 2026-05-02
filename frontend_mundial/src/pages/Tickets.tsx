@@ -9,14 +9,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-
 import { getMatches } from "../api/matchesApi";
-import { cancelTicket, getMyTickets, reserveTicket } from "../api/ticketsApi";
+import { cancelTicket, getMyTickets } from "../api/ticketsApi";
 import { useApp } from "../context/AppContext";
+import { bannerImages } from "../data/mockMedia";
 import type { Match } from "../types/match";
 import type { Ticket } from "../types/ticket";
-import { validatePositiveNumber } from "../utils/validation";
+import { validateFutureDateTime, validatePositiveNumber } from "../utils/validation";
 
 type Msg = { text: string; severity: "success" | "error" | "info" } | null;
 
@@ -36,8 +35,7 @@ function statusLabel(status: Ticket["status"]) {
 }
 
 export default function Tickets() {
-  const { user } = useApp();
-  const navigate = useNavigate();
+  const { user, addCartItem } = useApp();
 
   const [items, setItems] = useState<Ticket[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -81,7 +79,9 @@ export default function Tickets() {
     );
   }
 
-  const onReserve = async () => {
+  const selectedMatch = matches.find((match) => match.id === selectedMatchId);
+
+  const onAddToCart = () => {
     const nextQuantityError = validatePositiveNumber(quantity, "La cantidad", 1, 6);
     setQuantityError(nextQuantityError);
 
@@ -92,20 +92,26 @@ export default function Tickets() {
 
     if (nextQuantityError) return;
 
-    try {
-      setLoading(true);
-      setMsg(null);
-
-      const ticket = await reserveTicket(user.id, selectedMatchId, quantity);
-      setMsg({ text: "Reserva creada. Tienes 10 minutos para pagarla.", severity: "success" });
-      await refresh();
-      navigate(`/checkout?type=TICKET&ticketId=${ticket.id}&amount=${ticket.quantity * ticketPrice}`);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "No se pudo reservar la entrada.";
-      setMsg({ text: message, severity: "error" });
-    } finally {
-      setLoading(false);
+    if (!selectedMatch) {
+      setMsg({ text: "No encontramos la información del partido.", severity: "error" });
+      return;
     }
+    const matchTimeError = validateFutureDateTime(selectedMatch.startTimeISO, "La fecha del partido");
+    if (matchTimeError) {
+      setMsg({ text: "Ese partido ya no está disponible para reservar.", severity: "error" });
+      return;
+    }
+
+    addCartItem({
+      id: `cart-ticket-${selectedMatch.id}`,
+      kind: "TICKET",
+      matchId: selectedMatch.id,
+      title: `${selectedMatch.home.name} vs ${selectedMatch.away.name}`,
+      subtitle: `${selectedMatch.city} · ${selectedMatch.stadium}`,
+      quantity,
+      amount: quantity * ticketPrice,
+    });
+    setMsg({ text: "Entrada agregada al carrito.", severity: "success" });
   };
 
   const onCancel = async (ticketId: string) => {
@@ -128,12 +134,22 @@ export default function Tickets() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">Entradas</Typography>
-
-      <Alert severity="info">
-        Reserva entradas por partido, confirma el pago en sandbox y conserva evidencia de cada
-        transacción.
-      </Alert>
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          background: `linear-gradient(135deg, rgba(8,58,42,.94), rgba(22,117,79,.82)), url(${bannerImages.tickets})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 950 }}>
+          Entradas del Mundial 2026
+        </Typography>
+        <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 720 }}>
+          Elige un partido, revisa cantidad y agrega la reserva al carrito para pagarla junto con
+          souvenirs o compras del álbum.
+        </Typography>
+      </Paper>
 
       {msg && <Alert severity={msg.severity}>{msg.text}</Alert>}
 
@@ -165,10 +181,27 @@ export default function Tickets() {
             disabled={loading}
             sx={{ minWidth: { md: 180 } }}
           />
-          <Button variant="contained" onClick={onReserve} disabled={loading || matches.length === 0}>
-            Reservar
+          <Button variant="contained" onClick={onAddToCart} disabled={loading || matches.length === 0}>
+            Agregar al carrito
           </Button>
         </Stack>
+
+        {selectedMatch && (
+          <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
+            <Typography sx={{ fontWeight: 900 }}>
+              {selectedMatch.home.name} vs {selectedMatch.away.name}
+            </Typography>
+            <Typography color="text.secondary">
+              {selectedMatch.city} · {selectedMatch.stadium}
+            </Typography>
+            <Typography color="text.secondary">
+              {new Date(selectedMatch.startTimeISO).toLocaleString()}
+            </Typography>
+            <Typography sx={{ mt: 1, fontWeight: 800 }}>
+              Total estimado: ${(quantity * ticketPrice).toLocaleString()} COP
+            </Typography>
+          </Paper>
+        )}
       </Paper>
 
       <Paper sx={{ p: 2.5 }}>
@@ -218,27 +251,10 @@ export default function Tickets() {
                     <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
                       {ticket.status === "RESERVED" && (
                         <>
-                          <Button
-                            variant="contained"
-                            onClick={() =>
-                              navigate(
-                                `/checkout?type=TICKET&ticketId=${ticket.id}&amount=${
-                                  ticket.quantity * ticketPrice
-                                }`
-                              )
-                            }
-                          >
-                            Pagar
-                          </Button>
                           <Button variant="outlined" color="error" onClick={() => onCancel(ticket.id)}>
                             Cancelar
                           </Button>
                         </>
-                      )}
-                      {ticket.status === "PAID" && (
-                        <Button variant="outlined" onClick={() => navigate("/payments")}>
-                          Ver pago
-                        </Button>
                       )}
                     </Stack>
                   </Stack>

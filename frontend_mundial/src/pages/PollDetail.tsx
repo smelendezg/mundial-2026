@@ -2,11 +2,12 @@ import { useParams } from "react-router-dom";
 
 import { useEffect, useMemo, useState } from "react"; 
 
-import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material"; 
+import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 
- 
 
-import { useApp } from "../context/AppContext"; 
+
+import { bannerImages } from "../data/mockMedia";
+import { useApp } from "../context/AppContext";
 
 import type { Pool } from "../types/pool"; 
 
@@ -16,7 +17,7 @@ import type { Prediction } from "../types/prediction";
 
  
 
-import { getPools } from "../api/poolsApi"; 
+import { getPools } from "../api/poolsApi";
 import { getMatches } from "../api/matchesApi";
 
  
@@ -35,7 +36,7 @@ import {
 
  
 
-type Msg = { text: string; severity: "success" | "error" | "info" } | null; 
+type Msg = { text: string; severity: "success" | "error" | "info" } | null;
 
  
 
@@ -78,7 +79,7 @@ export default function PoolDetail() {
   const refresh = async (p: Pool, currentUserId?: string) => { 
 
     const allMatches = await getMatches();
-    const ms = allMatches.filter((m) => p.matchIds.includes(m.id)); 
+    const ms = allMatches.filter((m) => p.matchIds.includes(m.id));
 
     setMatches(ms); 
 
@@ -94,7 +95,7 @@ export default function PoolDetail() {
 
  
 
-      const nextDraft: Record<string, { hs: number; as: number }> = {}; 
+      const nextDraft: Record<string, { hs: number; as: number }> = {};
 
       for (const m of ms) { 
 
@@ -116,7 +117,7 @@ export default function PoolDetail() {
 
  
 
-    const ap = await getPredictionsByPool(p.id); 
+    const ap = await getPredictionsByPool(p.id);
 
     setAllPreds(ap); 
 
@@ -140,11 +141,11 @@ export default function PoolDetail() {
 
     load(); 
 
-  }, [code, user?.id]); 
+  }, [code, user?.id]);
 
  
 
-  const myMap = useMemo(() => { 
+  const myMap = useMemo(() => {
 
     const m = new Map<string, Prediction>(); 
 
@@ -156,7 +157,7 @@ export default function PoolDetail() {
 
  
 
-  const nameById = useMemo(() => { 
+  const nameById = useMemo(() => {
 
     const map = new Map<string, string>(); 
 
@@ -170,7 +171,7 @@ export default function PoolDetail() {
 
  
 
-  const ranking = useMemo(() => { 
+  const ranking = useMemo(() => {
 
     if (!pool) return []; 
 
@@ -192,13 +193,13 @@ export default function PoolDetail() {
 
  
 
-  const onSave = async (matchId: string) => { 
+  const onSave = async (matchId: string) => {
 
-    try { 
+    try {
 
-      setMsg(null); 
+      setMsg(null);
 
-      const d = draft[matchId] ?? { hs: 0, as: 0 }; 
+      const d = draft[matchId] ?? { hs: 0, as: 0 };
       const homeScore = Number(d.hs);
       const awayScore = Number(d.as);
 
@@ -217,15 +218,15 @@ export default function PoolDetail() {
         return;
       }
 
-      await upsertPrediction(pool.id, user.id, matchId, homeScore, awayScore); 
+      await upsertPrediction(pool.id, user.id, matchId, homeScore, awayScore);
+
+
+
+      setMsg({ text: "Pronóstico guardado correctamente.", severity: "success" });
 
  
 
-      setMsg({ text: "Pronóstico guardado correctamente.", severity: "success" }); 
-
- 
-
-      const pools = await getPools(); 
+      const pools = await getPools();
 
       const updated = pools.find((p) => p.code === code) ?? pool; 
 
@@ -235,7 +236,7 @@ export default function PoolDetail() {
 
     } catch (e) { 
 
-      setMsg({ text: (e as Error).message, severity: "error" }); 
+      setMsg({ text: (e as Error).message, severity: "error" });
 
  
 
@@ -257,19 +258,25 @@ export default function PoolDetail() {
 
     <Stack spacing={2}> 
 
-      <Paper sx={{ p: 3 }}> 
-
-        <Typography variant="h5">{pool.name}</Typography> 
-
-        <Typography sx={{ mt: 1 }}>Código: {pool.code}</Typography> 
-
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}> 
-
-          Cierre de pronóstico: {CLOSE_MINUTES_BEFORE} min antes del partido. 
-
-        </Typography> 
-
-      </Paper> 
+      <Paper
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          minHeight: 240,
+          background: `linear-gradient(135deg, rgba(9,61,42,.92), rgba(22,117,79,.82)), url(${bannerImages.pollDetail})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-end",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="h4" sx={{ fontWeight: 950 }}>{pool.name}</Typography>
+          <Typography color="text.secondary">Código: {pool.code}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Cierre de pronóstico: {CLOSE_MINUTES_BEFORE} min antes del partido.
+          </Typography>
+        </Stack>
+      </Paper>
 
  
 
@@ -415,7 +422,7 @@ export default function PoolDetail() {
 
  
 
-                  {my && ( 
+                  {my && (
 
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}> 
 
@@ -431,7 +438,7 @@ export default function PoolDetail() {
 
  
 
-                  <Typography variant="caption" sx={{ display: "block", mt: 1 }}> 
+                  <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
 
                     <b>Evidencia del grupo:</b> 
 
@@ -473,11 +480,11 @@ export default function PoolDetail() {
 
  
 
-                  {m.status === "FINISHED" && m.score && my?.points !== undefined && ( 
+                  {m.status === "FINISHED" && m.score && my?.points !== undefined && (
 
-                    <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}> 
+                    <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
 
-                      Puntos por este partido: <b>{my.points}</b> 
+                      Puntos por este partido: <b>{my.points}</b>
 
                     </Typography> 
 
@@ -537,4 +544,4 @@ export default function PoolDetail() {
 
 } 
 
- 
+
