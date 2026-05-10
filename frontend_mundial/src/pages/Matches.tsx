@@ -83,7 +83,7 @@ export default function Matches() {
       >
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 900 }}>
-            Partidos del Mundial ⚽
+            Partidos del Mundial
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 620, mt: 1 }}>
             Filtra por selección, estadio o ciudad y mira cada cruce con sus banderas.
@@ -155,19 +155,19 @@ export default function Matches() {
                   </Typography>
                 </Stack>
                 <Typography color="text.secondary">
-                  🏟️ {match.city} · {match.stadium}
+                  {match.city} · {match.stadium}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  🕒 {new Date(match.startTimeISO).toLocaleString()}
+                  {new Date(match.startTimeISO).toLocaleString()}
                 </Typography>
                 {match.score && (
                   <Typography>
-                    🥅 Resultado: {match.score.home} - {match.score.away}
+                    Resultado: {match.score.home} - {match.score.away}
                   </Typography>
                 )}
               </Stack>
 
-              <Chip label={`✨ ${statusLabels[match.status]}`} variant="outlined" />
+              <Chip label={statusLabels[match.status]} variant="outlined" />
             </Stack>
           </Paper>
         ))

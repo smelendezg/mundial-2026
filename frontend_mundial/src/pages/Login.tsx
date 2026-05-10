@@ -109,7 +109,7 @@ export default function Login() {
 
           <Stack spacing={2} sx={{ flex: 0.9, justifyContent: "center" }}>
             <Box>
-              <Typography variant="h4">Iniciar sesión ⚽</Typography>
+              <Typography variant="h4">Iniciar sesión</Typography>
               <Typography color="text.secondary">
                 Entra con tu usuario y contraseña.
               </Typography>

@@ -90,7 +90,7 @@ export default function Home() {
 
           <Stack spacing={0.5} sx={{ flex: 1, width: "100%" }}>
             <Typography variant="h4" sx={{ fontWeight: 900 }}>
-              Hola, {profile.name} {profile.lastName} ⚽
+              Hola, {profile.name} {profile.lastName}
             </Typography>
             <Typography>{profile.email || "Correo pendiente"}</Typography>
             <Typography variant="caption" color="text.secondary">
@@ -106,7 +106,7 @@ export default function Home() {
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
       <Paper sx={{ p: 2.5, flex: 1 }}>
-        <Typography sx={{ fontWeight: 900 }}>Tus favoritos ✨</Typography>
+        <Typography sx={{ fontWeight: 900 }}>Tus favoritos</Typography>
 
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           Equipos
@@ -115,7 +115,7 @@ export default function Home() {
           {profile.favoriteTeams.length === 0 ? (
             <Typography color="text.secondary">Aún no has seleccionado equipos.</Typography>
           ) : (
-            profile.favoriteTeams.map((team) => <Chip key={team} label={`⭐ ${team}`} />)
+            profile.favoriteTeams.map((team) => <Chip key={team} label={team} />)
           )}
         </Stack>
 
@@ -126,13 +126,13 @@ export default function Home() {
           {profile.favoriteCities.length === 0 ? (
             <Typography color="text.secondary">Aún no has seleccionado ubicaciones.</Typography>
           ) : (
-            profile.favoriteCities.map((city) => <Chip key={city} label={`🏟️ ${city}`} />)
+            profile.favoriteCities.map((city) => <Chip key={city} label={city} />)
           )}
         </Stack>
       </Paper>
 
       <Paper sx={{ p: 2.5, flex: 1 }}>
-        <Typography sx={{ fontWeight: 900 }}>Estado de alertas 🔔</Typography>
+        <Typography sx={{ fontWeight: 900 }}>Estado de alertas</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           {profile.notificationsEnabled
             ? "Te avisaremos sobre partidos, reservas y novedades importantes."
@@ -142,7 +142,7 @@ export default function Home() {
       </Stack>
 
       <Paper sx={{ p: 2.5 }}>
-        <Typography sx={{ fontWeight: 900 }}>Agenda personalizada 🗓️</Typography>
+        <Typography sx={{ fontWeight: 900 }}>Agenda personalizada</Typography>
         <Typography color="text.secondary" sx={{ mt: 0.5 }}>
           Próximos partidos priorizados según tus equipos, ciudades y estadios favoritos.
         </Typography>
@@ -154,10 +154,10 @@ export default function Home() {
                 {formatTeam(match.home)} vs {formatTeam(match.away)}
               </Typography>
               <Typography color="text.secondary">
-                🏟️ {match.city} · {match.stadium}
+                {match.city} · {match.stadium}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                🕒 {new Date(match.startTimeISO).toLocaleString()}
+                {new Date(match.startTimeISO).toLocaleString()}
               </Typography>
             </Paper>
           ))}

@@ -51,7 +51,7 @@ export default function Maps() {
         }}
       >
         <Typography variant="h4" sx={{ fontWeight: 900 }}>
-          Mapa real de estadios 🗺️
+          Mapa real de estadios
         </Typography>
         <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 760 }}>
           Busca una sede y abre su ubicación real en OpenStreetMap con marcador.
@@ -86,7 +86,7 @@ export default function Maps() {
                     onClick={() => setSelectedId(stadium.id)}
                     sx={{ justifyContent: "space-between", py: 1.2 }}
                   >
-                    <span>🏟️ {stadium.name}</span>
+                    <span>{stadium.name}</span>
                     <span>{stadium.city}</span>
                   </Button>
                 );

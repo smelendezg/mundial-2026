@@ -139,7 +139,7 @@ export default function Register() {
             </Box>
 
             <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-              {["🏟️ Estadios", "🎟️ Entradas", "🏆 Pollas", "✨ Álbum"].map((item) => (
+              {["Estadios", "Entradas", "Pollas", "Álbum"].map((item) => (
                 <Chip
                   key={item}
                   label={item}
@@ -155,7 +155,7 @@ export default function Register() {
 
           <Stack spacing={2.5} sx={{ flex: 1.1, justifyContent: "center" }}>
           <Box>
-            <Typography variant="h4">Crear cuenta 🌎</Typography>
+            <Typography variant="h4">Crear cuenta</Typography>
             <Typography color="text.secondary">
               Completa tus datos para entrar a la plataforma del Mundial 2026.
             </Typography>

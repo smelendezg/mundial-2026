@@ -84,7 +84,7 @@ export async function recalcPoolPoints(poolId: string): Promise<void> {
 
  
 
-    // 🎯 RESULT CORRECTO SEGÚN TU TIPO 
+    // Resultado correcto segun tu tipo
 
     if (pts === 3) { 
 
@@ -134,4 +134,4 @@ function outcome(h: number, a: number): "WIN" | "DRAW" | "LOSS" {
 
   return "DRAW"; 
 
-} 
+}

@@ -147,16 +147,16 @@ export default function Album() {
       >
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 900 }}>
-            Álbum Mundialista ✨
+            Álbum Mundialista
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 620, mt: 1 }}>
             Abre sobres, pega láminas por país y completa tu colección.
           </Typography>
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 2 }}>
-            <Chip label={`📖 ${stickers.length}/${catalog.length} láminas`} />
-            <Chip label={`📌 ${progressPct}% completo`} color="success" variant="outlined" />
-            <Chip label={`🪙 ${coins} monedas`} variant="outlined" />
-            <Chip label={`🎁 ${packsLeft} sobres hoy`} variant="outlined" />
+            <Chip label={`${stickers.length}/${catalog.length} láminas`} />
+            <Chip label={`${progressPct}% completo`} color="success" variant="outlined" />
+            <Chip label={`${coins} monedas`} variant="outlined" />
+            <Chip label={`${packsLeft} sobres hoy`} variant="outlined" />
           </Stack>
         </Box>
       </Paper>
@@ -263,7 +263,7 @@ export default function Album() {
                 </Typography>
               </Box>
               <Button variant="contained" onClick={onOpenPack} disabled={packsLeft <= 0}>
-                Abrir sobre 🎁
+                Abrir sobre
               </Button>
             </Stack>
 
@@ -357,7 +357,7 @@ export default function Album() {
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
         <Paper sx={{ p: 2.5, flex: 1 }}>
-          <Typography variant="h6">Último sobre 🎁</Typography>
+          <Typography variant="h6">Último sobre</Typography>
           {lastPack.length === 0 ? (
             <Typography color="text.secondary" sx={{ mt: 1 }}>
               Aún no has abierto sobres en esta sesión.
@@ -380,7 +380,7 @@ export default function Album() {
         </Paper>
 
         <Paper sx={{ p: 2.5, flex: 1 }}>
-          <Typography variant="h6">Repetidas para intercambiar 🪙</Typography>
+          <Typography variant="h6">Repetidas para intercambiar</Typography>
           {repeated.length === 0 ? (
             <Typography color="text.secondary" sx={{ mt: 1 }}>
               Aún no tienes láminas repetidas.
@@ -417,7 +417,7 @@ export default function Album() {
           <Stack spacing={0.8} sx={{ mt: 1 }}>
             {history.slice(0, 8).map((event) => (
               <Typography key={event.id} color="text.secondary">
-                📌 <b>{eventLabel(event.type)}</b> · {new Date(event.createdAt).toLocaleString()}
+                <b>{eventLabel(event.type)}</b> · {new Date(event.createdAt).toLocaleString()}
               </Typography>
             ))}
           </Stack>
