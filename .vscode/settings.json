@@ -1,0 +1,7 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "jsbecerrap",
+        "projectKey": "jsbecerrap_prueba_sonarCloud_frontend"
+    }
+}
